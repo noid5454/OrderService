@@ -20,7 +20,7 @@ import java.util.List;
 public class OrderService {
 
     @Autowired
-    private RestTemplate restTemplate;
+    public RestTemplate restTemplate;
 
     public List<Order> orders;
 

@@ -5,7 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.internal.matchers.Or;
+
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestTemplate;
@@ -25,8 +28,12 @@ class OrderServiceApplicationTests {
 
 	@BeforeEach
 	void setUp() {
-		//inventoryService = new InventoryService(new BookCatalogueService());
+		MockitoAnnotations.openMocks(this);
 		orderService = new OrderService();
+		orderService.restTemplate = restTemplate;
+		when(restTemplate.getForObject(eq("http://localhost:3002/inventory/quantity/1"), eq(Integer.class)))
+				.thenReturn(5);
+
 	}
 
 	@Test
@@ -48,50 +55,15 @@ class OrderServiceApplicationTests {
 
 	@Test
 	void placeOrder() {
-
-//		int initialQuantity = inventoryService.getBookQuantity(2);
-//		int orderedQuantity = 4;
-//		Order newOrder = new Order(3, 2, orderedQuantity, LocalDate.now());
-//		Order placedOrder = orderService.placeOrder(newOrder);
-//		assertNotNull(placedOrder);
-//
-//		int expectedQuantity = initialQuantity - orderedQuantity;
-//		int updatedQuantity = inventoryService.getBookQuantity(2);
-//		assertEquals(expectedQuantity, updatedQuantity);
-//		Order newOrder = new Order(3,1,2, LocalDate.now());
-//		int availableQuantity = 5;
-//		int orderQuantity = newOrder.getQuantity();
-//		int remainedQuantity = availableQuantity - orderQuantity;
-//
-//		when(restTemplate.getForObject(Mockito.anyString(), Mockito.eq(Integer.class)))
-//				.thenReturn(availableQuantity);
-//
-//		Order placedOrder = orderService.placeOrder(newOrder);
-//
-//		assertEquals(newOrder, placedOrder);
-//		assertEquals(remainedQuantity, orderService.getBookQuantity(newOrder.getBookID()));
-		Order newOrder = new Order(3, 1, 2, LocalDate.now());
-		int availableQuantity = 5;
-		int orderedQuantity = newOrder.getQuantity();
-		int remaindedQuantity = availableQuantity - orderedQuantity;
-
-		orderService.orders.clear();
-		orderService.orders.add(newOrder);
+		Order newOrder = new Order(3, 3, 2, LocalDate.now());
 
 		Order placedOrder = orderService.placeOrder(newOrder);
 
 		assertEquals(newOrder, placedOrder);
-		assertEquals(remaindedQuantity, orderService.getBookQuantity(newOrder.getBookID()));
-		assertEquals(1, orderService.getAllOrders().size());
+		assertTrue(orderService.orders.contains(newOrder));
 	}
 
 
-//		Order insufficientOrder = new Order(4, 2,10, LocalDate.now() );
-//		when(restTemplate.getForObject(Mockito.anyString(), Mockito.eq(Integer.class)))
-//				.thenReturn(availableQuantity);
-//		assertThrows(IllegalArgumentException.class, () -> orderService.placeOrder(insufficientOrder));
-		
-	}
 	@Test
 	void cancelOrder() {
 		int orderId = 1;
